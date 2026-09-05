@@ -1,0 +1,190 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "# Run this in a Google Colab cell.\n",
+        "# Step 1: Install gradio (first cell)\n",
+        "!pip install gradio -q"
+      ],
+      "metadata": {
+        "id": "QMSIhT7LH9VR"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import gradio as gr\n",
+        "def calculate(expression):\n",
+        "    try:\n",
+        "        # Only allow safe characters\n",
+        "        allowed = \"0123456789+-*/.() %\"\n",
+        "        if not all(c in allowed for c in expression):\n",
+        "            return \"Error\"\n",
+        "        # Replace % with /100 for percentage-style calculations\n",
+        "        expr = expression.replace(\"%\", \"/100\")\n",
+        "        result = eval(expr)\n",
+        "        # Format with commas, like the screenshot (3,230,000)\n",
+        "        if isinstance(result, float) and result.is_integer():\n",
+        "            result = int(result)\n",
+        "        return f\"{result:,}\"\n",
+        "    except Exception:\n",
+        "        return \"Error\"\n",
+        "class CalcState:\n",
+        "    def __init__(self):\n",
+        "        self.expr = \"\"\n",
+        "state = CalcState()\n",
+        "def press(btn):\n",
+        "    if btn == \"C\":\n",
+        "        state.expr = \"\"\n",
+        "    elif btn == \"⌫\":\n",
+        "        state.expr = state.expr[:-1]\n",
+        "    elif btn == \"=\":\n",
+        "        state.expr = calculate(state.expr).replace(\",\", \"\")\n",
+        "    else:\n",
+        "        mapping = {\"×\": \"*\", \"÷\": \"/\", \"−\": \"-\"}\n",
+        "        state.expr += mapping.get(btn, btn)\n",
+        "    return state.expr if state.expr else \"0\"\n",
+        "custom_css = \"\"\"\n",
+        "body, .gradio-container {\n",
+        "    background-color: #000000 !important;\n",
+        "    max-width: 420px !important;\n",
+        "    margin: 0 auto !important;\n",
+        "}\n",
+        "#calc-display textarea {\n",
+        "    background-color: #000000 !important;\n",
+        "    color: #4ECDC4 !important;\n",
+        "    font-size: 48px !important;\n",
+        "    text-align: right !important;\n",
+        "    border: none !important;\n",
+        "    font-family: 'Arial', sans-serif;\n",
+        "}\n",
+        "#calc-grid {\n",
+        "    display: grid !important;\n",
+        "    grid-template-columns: repeat(4, 1fr) !important;\n",
+        "    gap: 10px !important;\n",
+        "    padding: 10px !important;\n",
+        "}\n",
+        ".calc-btn {\n",
+        "    font-size: 22px !important;\n",
+        "    aspect-ratio: 1 / 1 !important;\n",
+        "    width: 100% !important;\n",
+        "    min-width: 0 !important;\n",
+        "    border-radius: 50% !important;\n",
+        "    background-color: #2b2b2b !important;\n",
+        "    color: white !important;\n",
+        "}\n",
+        ".calc-btn-op {\n",
+        "    background-color: #2b2b2b !important;\n",
+        "    color: #4ECDC4 !important;\n",
+        "}\n",
+        ".calc-btn-clear {\n",
+        "    color: #FF6B6B !important;\n",
+        "}\n",
+        ".calc-btn-equals {\n",
+        "    background-color: #1E9E8C !important;\n",
+        "    color: white !important;\n",
+        "}\n",
+        "\"\"\"\n",
+        "with gr.Blocks(css=custom_css, theme=gr.themes.Base()) as demo:\n",
+        "    display = gr.Textbox(value=\"0\", elem_id=\"calc-display\", show_label=False, interactive=False)\n",
+        "    with gr.Row(elem_id=\"calc-grid\"):\n",
+        "        c_btn = gr.Button(\"C\", elem_classes=\"calc-btn calc-btn-clear\")\n",
+        "        del_btn = gr.Button(\"⌫\", elem_classes=\"calc-btn calc-btn-clear\")\n",
+        "        pct_btn = gr.Button(\"%\", elem_classes=\"calc-btn calc-btn-op\")\n",
+        "        div_btn = gr.Button(\"÷\", elem_classes=\"calc-btn calc-btn-op\")\n",
+        "\n",
+        "        b7 = gr.Button(\"7\", elem_classes=\"calc-btn\")\n",
+        "        b8 = gr.Button(\"8\", elem_classes=\"calc-btn\")\n",
+        "        b9 = gr.Button(\"9\", elem_classes=\"calc-btn\")\n",
+        "        mul_btn = gr.Button(\"×\", elem_classes=\"calc-btn calc-btn-op\")\n",
+        "\n",
+        "        b4 = gr.Button(\"4\", elem_classes=\"calc-btn\")\n",
+        "        b5 = gr.Button(\"5\", elem_classes=\"calc-btn\")\n",
+        "        b6 = gr.Button(\"6\", elem_classes=\"calc-btn\")\n",
+        "        sub_btn = gr.Button(\"−\", elem_classes=\"calc-btn calc-btn-op\")\n",
+        "\n",
+        "        b1 = gr.Button(\"1\", elem_classes=\"calc-btn\")\n",
+        "        b2 = gr.Button(\"2\", elem_classes=\"calc-btn\")\n",
+        "        b3 = gr.Button(\"3\", elem_classes=\"calc-btn\")\n",
+        "        add_btn = gr.Button(\"+\", elem_classes=\"calc-btn calc-btn-op\")\n",
+        "\n",
+        "        paren_btn = gr.Button(\"()\", elem_classes=\"calc-btn\")\n",
+        "        b0 = gr.Button(\"0\", elem_classes=\"calc-btn\")\n",
+        "        dot_btn = gr.Button(\".\", elem_classes=\"calc-btn\")\n",
+        "        eq_btn = gr.Button(\"=\", elem_classes=\"calc-btn calc-btn-equals\")\n",
+        "    buttons = [c_btn, del_btn, pct_btn, div_btn, b7, b8, b9, mul_btn,\n",
+        "               b4, b5, b6, sub_btn, b1, b2, b3, add_btn,\n",
+        "               paren_btn, b0, dot_btn, eq_btn]\n",
+        "    for b in buttons:\n",
+        "        b.click(fn=press, inputs=b, outputs=display)\n",
+        "demo.launch(debug=True)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 680
+        },
+        "id": "iNRuwvVlICfX",
+        "outputId": "240f7b58-83e5-4e2c-9016-0b3b365ac459"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "metadata": {
+            "tags": null
+          },
+          "name": "stderr",
+          "output_type": "stream",
+          "text": [
+            "/tmp/ipykernel_2468/3034810467.py:73: UserWarning: The parameters have been moved from the Blocks constructor to the launch() method in Gradio 6.0: theme, css. Please pass these parameters to launch() instead.\n",
+            "  with gr.Blocks(css=custom_css, theme=gr.themes.Base()) as demo:\n"
+          ]
+        },
+        {
+          "metadata": {
+            "tags": null
+          },
+          "name": "stdout",
+          "output_type": "stream",
+          "text": [
+            "It looks like you are running Gradio on a hosted Jupyter notebook, which requires `share=True`. Automatically setting `share=True` (you can turn this off by setting `share=False` in `launch()` explicitly).\n",
+            "\n",
+            "Colab notebook detected. This cell will run indefinitely so that you can see errors and logs. To turn off, set debug=False in launch().\n",
+            "* Running on public URL: https://c932dfd150e4931770.gradio.live\n",
+            "\n",
+            "This share link is temporary and will last for up to 1 week (best effort). For free permanent hosting and GPU upgrades, run `gradio deploy` from the terminal in the working directory to deploy to Hugging Face Spaces (https://huggingface.co/spaces)\n"
+          ]
+        },
+        {
+          "data": {
+            "text/html": [
+              "<div><iframe src=\"https://c932dfd150e4931770.gradio.live\" width=\"100%\" height=\"500\" allow=\"autoplay; camera; microphone; clipboard-read; clipboard-write;\" frameborder=\"0\" allowfullscreen></iframe></div>"
+            ],
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ]
+          },
+          "metadata": {},
+          "output_type": "display_data"
+        }
+      ]
+    }
+  ]
+}
