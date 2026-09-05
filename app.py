@@ -1,23 +1,19 @@
-import gradio as gr
-
-
-# -----------------------------
-# Calculator logic
-# -----------------------------
+import gradio as 
+# Calculator 
 def calculate(expression):
     try:
-        # Only allow safe calculator characters
+        
         allowed = "0123456789+-*/.() %"
 
         if not all(c in allowed for c in expression):
             return "Error"
 
-        # Convert percentage to decimal
+
         expr = expression.replace("%", "/100")
 
         result = eval(expr)
 
-        # Remove .0 from whole numbers
+        
         if isinstance(result, float) and result.is_integer():
             result = int(result)
 
@@ -26,10 +22,6 @@ def calculate(expression):
     except Exception:
         return "Error"
 
-
-# -----------------------------
-# Button handler
-# -----------------------------
 def press(expression, button):
     if button == "C":
         expression = ""
@@ -58,9 +50,6 @@ def press(expression, button):
     return expression if expression else "0"
 
 
-# -----------------------------
-# Calculator design
-# -----------------------------
 custom_css = """
 body,
 .gradio-container {
@@ -121,9 +110,7 @@ body,
 """
 
 
-# -----------------------------
-# Gradio application
-# -----------------------------
+
 with gr.Blocks(
     css=custom_css,
     theme=gr.themes.Base()
@@ -206,9 +193,7 @@ with gr.Blocks(
         )
 
 
-    # -----------------------------
-    # Connect buttons
-    # -----------------------------
+  
     buttons = [
         c_btn,
         del_btn,
@@ -244,9 +229,7 @@ with gr.Blocks(
         )
 
 
-# -----------------------------
-# Start application
-# -----------------------------
+
 if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
